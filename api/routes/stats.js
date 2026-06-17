@@ -5,6 +5,7 @@ const NodeCache = require("node-cache");
 const auth = require("../middleware/auth");
 
 const router = express.Router();
+const PYTHON_SERVICE_URL = process.env.PYTHON_SERVICE_URL || "http://localhost:8000";
 
 const cache = new NodeCache({
   stdTTL: 60,
@@ -38,7 +39,7 @@ router.get("/summary", auth, async (req, res) => {
 
     const response =
       await axios.get(
-        "http://localhost:8000/stats/summary"
+        `${PYTHON_SERVICE_URL}/stats/summary`
       );
 
     cache.set(
@@ -88,7 +89,7 @@ router.get("/trend", auth, async (req, res) => {
 
     const response =
       await axios.get(
-        "http://localhost:8000/stats/trend"
+        `${PYTHON_SERVICE_URL}/stats/trend`
       );
 
     cache.set(
@@ -138,7 +139,7 @@ router.get("/top", auth, async (req, res) => {
 
     const response =
       await axios.get(
-        "http://localhost:8000/stats/top"
+        `${PYTHON_SERVICE_URL}/stats/top`
       );
 
     cache.set(
@@ -180,7 +181,7 @@ router.get("/forecast", auth, async (req, res) => {
     }
 
     const response = await axios.get(
-      `http://localhost:8000/stats/forecast?metric=${metric}&horizon=${horizon}`
+      `${PYTHON_SERVICE_URL}/stats/forecast?metric=${metric}&horizon=${horizon}`
     );
 
     cache.set(cacheKey, response.data);
@@ -213,7 +214,7 @@ router.get("/jobs", auth, async (req, res) => {
     }
 
     const response = await axios.get(
-      "http://localhost:8000/stats/jobs"
+      `${PYTHON_SERVICE_URL}/stats/jobs`
     );
 
     cache.set("jobs_list", response.data);

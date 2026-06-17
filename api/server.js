@@ -38,11 +38,13 @@ mongoose.connect(process.env.MONGO_URI)
 
 app.use("/api/auth", authRoutes);
 
+const PYTHON_SERVICE_URL = process.env.PYTHON_SERVICE_URL || "http://localhost:8000";
+
 app.get("/health", async (req, res) => {
   try {
 
     const py = await axios.get(
-      "http://localhost:8000/health"
+      `${PYTHON_SERVICE_URL}/health`
     );
 
     res.json({
@@ -60,6 +62,7 @@ app.get("/health", async (req, res) => {
   }
 });
 
-app.listen(5000, () => {
-  console.log("🚀 Server running on port 5000");
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
 });
