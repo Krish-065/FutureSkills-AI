@@ -1,96 +1,63 @@
 # FutureSkills-AI: AI Job Market Intelligence & Predictive Analytics Platform
 
-**FutureSkills-AI** is a data-driven intelligence dashboard and predictive analytics platform built using a modern decoupled architecture (MERN + FastAPI). The platform aggregates, analyzes, and forecasts trends in global AI skill requirements, employment metrics, and market salaries to help developers, educators, and recruiters align with future job demands.
+**FutureSkills-AI** is a data-driven intelligence dashboard and predictive analytics platform. It aggregates, analyzes, and forecasts trends in global AI skill requirements, employment metrics, and market salaries to help developers, recruiters, and educators align with future demands.
 
 ---
 
-## 🚀 Key Features
+## 🌐 Live Deployments
 
-* **Live Market Intelligence KPIs:** Instant visibility into critical metrics such as total jobs ingested, global average salary, top hiring country, and the most in-demand job role.
-* **Interactive Filtering & URL Syncing:** Search by keywords and filter by Country or Experience Level. Filter states are automatically synced to URL search parameters for easy sharing.
-* **Hiring Trend & ML Forecasting:** A Composed Line Chart displaying historical hiring volumes side-by-side with a **14-month predictive forecast** calculated using an ML model, complete with standard error confidence boundaries (95% CI).
-* **AI Skill Distribution Analytics:** A responsive Recharts bar chart showing the frequency of key tools and methodologies (Python, SQL, Machine Learning, Deep Learning, Cloud) across all postings.
-* **Interactive Job Registry Database:** A paginated, sortable, and filterable datagrid displaying full job attributes (Salary, Location, Openings, Industry) for in-depth exploration.
-* **Robust API Gateway with Caching:** Express-based API gateway implementing user authentication (JWT + bcrypt), express-rate-limit, and a 30-second memory cache to optimize heavy analytics query responses.
+*   **Frontend Dashboard (Vercel):** [https://future-skills-ai.vercel.app](https://future-skills-ai.vercel.app)
+*   **Node.js API Gateway (Render):** [https://futureskills-api-gateway.onrender.com](https://futureskills-api-gateway.onrender.com)
+*   **Python Analytics Service (Render):** [https://futureskills-py-service.onrender.com](https://futureskills-py-service.onrender.com)
 
 ---
 
-## 🏗️ Architecture Design
+## 🎯 Use of this Project
 
-```
-                     ┌──────────────────┐
-                     │  Vite + React    │
-                     │  (Client Port)   │
-                     └────────┬─────────┘
-                              │
-                              ▼
-                     ┌──────────────────┐
-                     │ Node/Express API │
-                     │   (Port 5000)    │
-                     └────────┬─────────┘
-               ┌──────────────┴──────────────┐
-               ▼                             ▼
-      ┌──────────────────┐          ┌──────────────────┐
-      │  FastAPI Service │          │  MongoDB Atlas   │
-      │   (Port 8000)    │          │  (Cloud Database)│
-      └──────────────────┘          └──────────────────┘
-```
+This platform enables users to:
+*   **Track AI Skill Demands:** Monitor the frequency and growth of critical tools like Python, SQL, Machine Learning, Deep Learning, and Cloud.
+*   **Analyze Global Salary Ranges:** Keep track of market salary distributions across countries and experience levels.
+*   **Forecast Hiring Trends:** Provide forward-looking, data-backed insights on job market volumes to make proactive career or hiring decisions.
 
 ---
 
-## 🛠️ Project Structure
+## 🛠️ How it is Made & Workflow
 
-* `/web` - Vite, React, React Router v7, and Recharts frontend.
-* `/api` - Node.js, Express, Mongoose schemas, and JWT Auth middleware.
-* `/py-service` - Python (FastAPI), Pandas data aggregation, and Scikit-learn Linear Regression model.
-* `/docs` - System diagrams and architecture layout specs.
+The platform is built on a decoupled, microservices-oriented architecture:
 
----
-
-## 🏁 Getting Started
-
-### Prerequisites
-* Node.js (v18+)
-* Python (v3.10+)
-* MongoDB Atlas Cluster Connection URI
-
----
-
-### Setup Instructions
-
-#### 1. Database & Ingestion Setup
-1. Define your connection string under `MONGO_URI` in both `api/.env` and `py-service/.env`.
-2. Navigate to `/py-service`, activate the virtual environment (`.\venv\Scripts\activate`), and run the ingestion pipeline to populate MongoDB Atlas:
-   ```bash
-   python ingest/ingest_jobs.py
-   ```
-
-#### 2. Run Python Analytics Service
-Navigate to `/py-service` and start the FastAPI uvicorn server:
-```bash
-uvicorn app:app --host 127.0.0.1 --port 8000
+```mermaid
+graph TD
+    Frontend[React Frontend - Vercel] -->|API Calls| Gateway[Node.js API Gateway - Render]
+    Gateway -->|Authentication / Cache| Gateway
+    Gateway -->|Secure Query| Mongo[(MongoDB Atlas)]
+    Gateway -->|Analytics / Forecasting Requests| PyService[Python Service - Render]
+    PyService -->|ML Calculations| PyService
+    PyService -->|Data Pulls| Mongo
 ```
 
-#### 3. Run Node.js API Gateway
-Navigate to `/api`, install dependencies, and start the development server:
-```bash
-npm install
-npm run dev
-```
-
-#### 4. Run Vite React Frontend
-Navigate to `/web`, install packages, and start the development server:
-```bash
-npm install
-npm run dev
-```
-
-Open [http://localhost:5173](http://localhost:5173) in your browser.
+*   **Frontend:** Built with **React** and **Vite** for the UI, styled using premium CSS, and utilizing **Recharts** for interactive data visualizations.
+*   **API Gateway:** Developed using **Node.js** and **Express**. It handles rate limiting, user authentication (JWT + Bcrypt), and caches queries for 30 seconds to optimize performance.
+*   **Analytics Engine:** Crafted with **FastAPI (Python)**. It processes aggregation pipelines directly from MongoDB Atlas and executes predictive forecasting models.
+*   **Database:** A cloud-hosted **MongoDB Atlas** cluster storing cleaned, structured global job market listings.
 
 ---
 
-## 🤖 Predictive Model Specifications
-The forecasting engine uses a **Linear Regression** model trained on monthly aggregated historical time-series data. 
-* **Validation Split:** Holds out the last 6 months of metrics for model validation.
-* **Validation Accuracy metrics:** Measures performance dynamically using RMSE and MAPE.
-* **Confidence Boundaries:** Calculates standard error offsets based on residuals to display 95% Confidence Intervals.
+## 📊 Insights of this Project
+
+The dashboard generates real-time, high-impact intelligence from data:
+*   **Market KPIs:** Instantly tracks total postings, global average salaries, top-hiring regions, and dominant roles.
+*   **AI Skill Distribution:** Computes frequency charts to map the landscape of required developer technologies.
+*   **Hiring Volumes & Trends:** Identifies monthly job posting trends to highlight seasonality and market expansion.
+*   **14-Month ML Forecast:** Generates a predictive timeline for job openings using a Linear Regression model with confidence boundaries (95% CI) computed from time-series residuals.
+
+---
+
+## 🚀 How to Use It
+
+1.  **Register / Log In:** Securely sign up or log in on the landing page to access the analytics workspace.
+2.  **Explore the Dashboard:**
+    *   **KPIs:** View general market conditions.
+    *   **Interactive Charts:** Hover over the Recharts visualizations to inspect precise skill frequencies and trend coordinates.
+    *   **Forecasting Tab:** Toggle metrics (such as jobs, salaries, or openings) to view historical data alongside the ML forecast and its confidence bounds.
+3.  **Search & Filter:** Apply keywords, experience levels, or country filters. The URL query parameters sync in real time, making sharing specific filtered states simple.
+4.  **Job Registry:** Navigate the paginated job table to inspect specific companies, salaries, locations, and industry domains.
