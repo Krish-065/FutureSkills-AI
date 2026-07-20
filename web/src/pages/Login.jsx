@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import API from "../services/api";
 
@@ -8,8 +8,27 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (localStorage.getItem("token")) {
+      navigate("/dashboard");
+    }
+  }, [navigate]);
 
   const handleLogin = async () => {
+    setError("");
+    if (!email.trim() || !password.trim()) {
+      setError("Please enter both email and password.");
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
     try {
       setLoading(true);
 
@@ -22,9 +41,9 @@ function Login() {
 
       navigate("/dashboard");
     } catch (err) {
-      alert(
+      setError(
         err.response?.data?.message ||
-          "Login Failed"
+          "Login Failed. Please check your credentials."
       );
     } finally {
       setLoading(false);
@@ -41,6 +60,8 @@ function Login() {
           Login to explore hiring trends,
           salaries and AI market insights.
         </p>
+
+        {error && <div className="error-message">{error}</div>}
 
         <input
           type="email"

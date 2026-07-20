@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import API from "../services/api";
 
 import KPI from "../components/KPI";
@@ -7,6 +7,7 @@ import TrendChart from "../components/TrendChart";
 import SkillChart from "../components/SkillChart";
 
 function Dashboard() {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Filters from URL Search Params
@@ -19,6 +20,7 @@ function Dashboard() {
   const [skills, setSkills] = useState([]);
   const [jobs, setJobs] = useState([]);
   const [forecastData, setForecastData] = useState(null);
+  const [error, setError] = useState("");
 
   // Sorting state for table
   const [sortField, setSortField] = useState("");
@@ -29,11 +31,17 @@ function Dashboard() {
   const itemsPerPage = 8;
 
   useEffect(() => {
-    loadData();
-  }, []);
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/");
+    } else {
+      loadData();
+    }
+  }, [navigate]);
 
   const loadData = async () => {
     try {
+      setError("");
       const summaryRes = await API.get("/stats/summary");
       const skillsRes = await API.get("/stats/top");
       const forecastRes = await API.get("/stats/forecast?metric=jobs&horizon=14");
@@ -44,13 +52,14 @@ function Dashboard() {
       setForecastData(forecastRes.data.data);
       setJobs(jobsRes.data.data);
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      setError("Failed to fetch dashboard statistics. Please verify the backend services are running and try again.");
     }
   };
 
   const logout = () => {
     localStorage.removeItem("token");
-    window.location.href = "/";
+    navigate("/");
   };
 
   const handleFilterChange = (key, val) => {
@@ -69,6 +78,23 @@ function Dashboard() {
     setSortField(field);
     setSortOrder(order);
   };
+
+  if (error) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", height: "100vh", gap: "20px" }}>
+        <h2 style={{ color: "#ef4444", margin: 0 }}>Connection Error</h2>
+        <p style={{ color: "#64748b", margin: 0, textAlign: "center", maxWidth: "400px" }}>{error}</p>
+        <div>
+          <button onClick={loadData} className="logout-btn" style={{ background: "#2563eb", marginRight: "10px" }}>
+            Retry
+          </button>
+          <button onClick={logout} className="logout-btn">
+            Go to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (!summary || !forecastData) {
     return (

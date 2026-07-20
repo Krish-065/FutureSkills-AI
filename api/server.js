@@ -27,7 +27,7 @@ app.use(
   "/api/stats",
   statsRoutes
 );
-mongoose.connect(process.env.MONGO_URI)
+mongoose.connect(process.env.MONGO_URI, { dbName: "futureskills_ai" })
   .then(() => {
     console.log("✅ MongoDB Connected");
   })

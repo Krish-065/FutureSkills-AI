@@ -1,23 +1,41 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import API from "../services/api";
 
 function Signup() {
   const navigate = useNavigate();
 
-  const [name, setName] =
-    useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const [email, setEmail] =
-    useState("");
-
-  const [password, setPassword] =
-    useState("");
-
-  const [loading, setLoading] =
-    useState(false);
+  useEffect(() => {
+    if (localStorage.getItem("token")) {
+      navigate("/dashboard");
+    }
+  }, [navigate]);
 
   const handleSignup = async () => {
+    setError("");
+
+    if (!name.trim() || !email.trim() || !password.trim()) {
+      setError("All fields are required.");
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters long.");
+      return;
+    }
+
     try {
       setLoading(true);
 
@@ -27,33 +45,20 @@ function Signup() {
         password,
       });
 
-      const loginRes =
-        await API.post(
-          "/auth/login",
-          {
-            email,
-            password,
-          }
-        );
+      const loginRes = await API.post("/auth/login", {
+        email,
+        password,
+      });
 
-      localStorage.setItem(
-        "token",
-        loginRes.data.token
-      );
-
+      localStorage.setItem("token", loginRes.data.token);
       navigate("/dashboard");
-
     } catch (err) {
-
-      alert(
+      setError(
         err.response?.data?.message ||
-          "Signup Failed"
+          "Signup Failed. Please try again."
       );
-
     } finally {
-
       setLoading(false);
-
     }
   };
 
@@ -67,6 +72,8 @@ function Signup() {
           Join the AI Job Market
           Intelligence Platform
         </p>
+
+        {error && <div className="error-message">{error}</div>}
 
         <input
           placeholder="Full Name"
