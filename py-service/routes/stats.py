@@ -138,6 +138,7 @@ def get_jobs():
 def get_forecast(metric: str = "jobs", horizon: int = 14):
     import numpy as np
     from sklearn.linear_model import LinearRegression
+    from sklearn.ensemble import RandomForestRegressor
     from sklearn.metrics import mean_squared_error, mean_absolute_percentage_error
     
     pipeline = [
@@ -185,9 +186,9 @@ def get_forecast(metric: str = "jobs", horizon: int = 14):
     X_train, X_test = X[:split_idx], X[split_idx:]
     y_train, y_test = y[:split_idx], y[split_idx:]
     
+    # 1. Linear Regression
     model = LinearRegression()
     model.fit(X_train, y_train)
-    
     y_pred_test = model.predict(X_test)
     rmse = float(np.sqrt(mean_squared_error(y_test, y_pred_test)))
     mape = float(mean_absolute_percentage_error(y_test, y_pred_test)) * 100
@@ -195,15 +196,28 @@ def get_forecast(metric: str = "jobs", horizon: int = 14):
     model_full = LinearRegression()
     model_full.fit(X, y)
     y_pred_full = model_full.predict(X)
-    
     residuals = y - y_pred_full
     std_err = float(np.std(residuals))
+    
+    # 2. Random Forest Regressor
+    model_rf = RandomForestRegressor(n_estimators=100, random_state=42)
+    model_rf.fit(X_train, y_train)
+    y_pred_test_rf = model_rf.predict(X_test)
+    rmse_rf = float(np.sqrt(mean_squared_error(y_test, y_pred_test_rf)))
+    mape_rf = float(mean_absolute_percentage_error(y_test, y_pred_test_rf)) * 100
+    
+    model_full_rf = RandomForestRegressor(n_estimators=100, random_state=42)
+    model_full_rf.fit(X, y)
+    y_pred_full_rf = model_full_rf.predict(X)
+    residuals_rf = y - y_pred_full_rf
+    std_err_rf = float(np.std(residuals_rf))
     
     last_idx = data[-1]["index"]
     last_year = results_sorted[-1]["_id"]["year"]
     last_month = results_sorted[-1]["_id"]["month"]
     
     forecast_data = []
+    forecast_data_rf = []
     curr_year = last_year
     curr_month = last_month
     
@@ -214,14 +228,25 @@ def get_forecast(metric: str = "jobs", horizon: int = 14):
             curr_year += 1
             
         pred_idx = last_idx + i
+        
+        # LR Forecast
         pred_val = float(model_full.predict([[pred_idx]])[0])
         pred_val = max(0.0, pred_val)
-        
         forecast_data.append({
             "date": f"{curr_year}-{curr_month:02d}",
             "value": round(pred_val, 2),
             "lower": round(max(0.0, pred_val - 1.96 * std_err), 2),
             "upper": round(pred_val + 1.96 * std_err, 2)
+        })
+        
+        # RF Forecast
+        pred_val_rf = float(model_full_rf.predict([[pred_idx]])[0])
+        pred_val_rf = max(0.0, pred_val_rf)
+        forecast_data_rf.append({
+            "date": f"{curr_year}-{curr_month:02d}",
+            "value": round(pred_val_rf, 2),
+            "lower": round(max(0.0, pred_val_rf - 1.96 * std_err_rf), 2),
+            "upper": round(pred_val_rf + 1.96 * std_err_rf, 2)
         })
         
     historical_data = [{
@@ -232,9 +257,15 @@ def get_forecast(metric: str = "jobs", horizon: int = 14):
     return {
         "historical": historical_data,
         "forecast": forecast_data,
+        "forecast_rf": forecast_data_rf,
         "metadata": {
             "model_type": "Linear Regression",
             "rmse": round(rmse, 2),
             "mape": f"{round(mape, 2)}%"
+        },
+        "metadata_rf": {
+            "model_type": "Random Forest Regressor",
+            "rmse": round(rmse_rf, 2),
+            "mape": f"{round(mape_rf, 2)}%"
         }
     }

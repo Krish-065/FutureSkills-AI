@@ -136,22 +136,31 @@ function Dashboard() {
   const currentJobs = sortedJobs.slice(indexOfFirstItem, indexOfLastItem);
 
   // Prep chart data
-  const { historical, forecast, metadata } = forecastData;
+  const { historical, forecast, forecast_rf, metadata, metadata_rf } = forecastData;
   const combinedTrendData = [
     ...historical.map((h) => ({ date: h.date, value: h.value })),
     {
       date: historical[historical.length - 1]?.date,
       value: historical[historical.length - 1]?.value,
       forecast: historical[historical.length - 1]?.value,
+      forecast_rf: historical[historical.length - 1]?.value,
       lower: historical[historical.length - 1]?.value,
       upper: historical[historical.length - 1]?.value,
+      lower_rf: historical[historical.length - 1]?.value,
+      upper_rf: historical[historical.length - 1]?.value,
     },
-    ...forecast.map((f) => ({
-      date: f.date,
-      forecast: f.value,
-      lower: f.lower,
-      upper: f.upper,
-    })),
+    ...forecast.map((f, i) => {
+      const rf_point = forecast_rf ? forecast_rf[i] : null;
+      return {
+        date: f.date,
+        forecast: f.value,
+        lower: f.lower,
+        upper: f.upper,
+        forecast_rf: rf_point ? rf_point.value : null,
+        lower_rf: rf_point ? rf_point.lower : null,
+        upper_rf: rf_point ? rf_point.upper : null,
+      };
+    }),
   ];
 
   // Unique lists for filters
@@ -175,13 +184,23 @@ function Dashboard() {
       </div>
 
       {metadata && (
-        <div className="forecast-meta-card">
-          <h4>🤖 Predictive ML Model Metadata</h4>
-          <ul>
-            <li><strong>Model Type:</strong> {metadata.model_type}</li>
-            <li><strong>Validation RMSE (Root Mean Squared Error):</strong> {metadata.rmse}</li>
-            <li><strong>Validation MAPE (Mean Absolute Percentage Error):</strong> {metadata.mape}</li>
-          </ul>
+        <div className="forecast-meta-card" style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
+          <div style={{ flex: 1, minWidth: "240px" }}>
+            <h4 style={{ margin: "0 0 10px 0", color: "#1e1b4b" }}>🤖 Linear Regression Model</h4>
+            <ul style={{ margin: 0, paddingLeft: "20px", fontSize: "13.5px", lineHeight: "1.6" }}>
+              <li><strong>Validation RMSE:</strong> {metadata.rmse}</li>
+              <li><strong>Validation MAPE:</strong> {metadata.mape}</li>
+            </ul>
+          </div>
+          {metadata_rf && (
+            <div style={{ flex: 1, minWidth: "240px", borderLeft: "1px solid #e2e8f0", paddingLeft: "20px" }}>
+              <h4 style={{ margin: "0 0 10px 0", color: "#1e1b4b" }}>🌲 Random Forest Regressor</h4>
+              <ul style={{ margin: 0, paddingLeft: "20px", fontSize: "13.5px", lineHeight: "1.6" }}>
+                <li><strong>Validation RMSE:</strong> {metadata_rf.rmse}</li>
+                <li><strong>Validation MAPE:</strong> {metadata_rf.mape}</li>
+              </ul>
+            </div>
+          )}
         </div>
       )}
 

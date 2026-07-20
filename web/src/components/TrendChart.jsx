@@ -38,7 +38,17 @@ function TrendChart({ data }) {
             strokeWidth={3}
             strokeDasharray="5 5"
             dot={{ r: 2 }}
-            name="Forecast"
+            name="LR Forecast"
+            connectNulls
+          />
+          <Line
+            type="monotone"
+            dataKey="forecast_rf"
+            stroke="#8b5cf6"
+            strokeWidth={3}
+            strokeDasharray="5 5"
+            dot={{ r: 2 }}
+            name="RF Forecast"
             connectNulls
           />
           <Line
@@ -48,7 +58,7 @@ function TrendChart({ data }) {
             strokeWidth={1.5}
             strokeDasharray="3 3"
             dot={false}
-            name="Upper Bound (95% CI)"
+            name="LR Upper Bound (95% CI)"
             connectNulls
           />
           <Line
@@ -58,7 +68,7 @@ function TrendChart({ data }) {
             strokeWidth={1.5}
             strokeDasharray="3 3"
             dot={false}
-            name="Lower Bound (95% CI)"
+            name="LR Lower Bound (95% CI)"
             connectNulls
           />
         </LineChart>
